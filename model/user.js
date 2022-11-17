@@ -29,15 +29,6 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, "Please provide password"],
         },
-        passwordChangedAt: {
-            type: Date,
-        },
-        passwordResetToken: {
-            type: String,
-        },
-        passwordResetExpires: {
-            type: Date,
-        },
         phoneNumber: {
             type: String,
             required: [true, "Please provide phone number"],
@@ -70,6 +61,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        cart:[{
+            type:schema.Types.ObjectId,
+            ref:"Product"
+        }],
         isActive: {
             type: Boolean,
             default: true,
