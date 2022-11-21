@@ -73,15 +73,5 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-userSchema.methods.generateJWT = function () {
-    return jwt.sign({ userId: this._id, role: this.role }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRATION,
-    });
-};
-
-
-userSchema.methods.comparePassword = async function (candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
-};
 
 module.exports =  mongoose.model("User", userSchema, "user");

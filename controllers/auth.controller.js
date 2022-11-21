@@ -40,6 +40,11 @@ const refreshToken= async (req, res, next) => {
     res.status(200).json(sendSuccessApiResponse(data, 200));
 };
 
+generateJWT = function (user) {
+    return jwt.sign({ userId: this._id, role: this.role }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRATION,
+    });
+};
 const registerUser = async (req, res, next) => {
     try{
         const {
@@ -61,7 +66,6 @@ const registerUser = async (req, res, next) => {
             gender,
             role,
         };
-        console.log(1)
         const emailisActive = await User.findOne({ email, isActive: true , isVerified:true});
         if (emailisActive) {
             const message = "Email is already registered";
@@ -75,11 +79,13 @@ const registerUser = async (req, res, next) => {
         Email.sendEmail(email,OTPgen);
         const notVerifiedUser = await User.find({email:email});
         if(notVerifiedUser.length){
-            res.status(200).json(sendSuccessApiResponse(notVerifiedUser,200));
+            console.log(notVerifiedUser);
+            res.json(sendSuccessApiResponse(notVerifiedUser,200));
         }
         else{
+            console.log(1)
             const user = await User.create(toStore);
-            res.status(201).json(sendSuccessApiResponse(data, 201));
+            res.json(sendSuccessApiResponse(user, 201));
         }
     }
     catch(err){
@@ -100,7 +106,7 @@ const loginUser = async (req, res, next) => {
             return next(createCustomError(message, 401));
         }   
     
-        const isPasswordRight = await emailExists.comparePassword(password);
+        const isPasswordRight = await bcrypt.compare(candidatePassword, emailExists.password);
         if (!isPasswordRight) {
             const message = "Invalid credentials";
             return next(createCustomError(message, 401));
@@ -110,7 +116,7 @@ const loginUser = async (req, res, next) => {
             firstName: emailExists.firstName,
             lastName: emailExists.lastName,
             email: emailExists.email,
-            token: emailExists.generateJWT(),
+            token: generateJWT(emailExists),
         };
     
         res.status(200).json(sendSuccessApiResponse(data));
@@ -145,18 +151,18 @@ const forgotPassword = async (req, res, next) => {
 
     }
 };
-
 const otpValid = async (req, res, next) => {
     try{
         const {otp,email} = req.body;
         console.log(otp);
         const verify = await Otp.findOne({email:email,otp:otp});
+        console.log(verify);
         if(!verify){
             const message = "Invalid token or Token expired";
-            return next(createCustomError(message));
+            return res.json(createCustomError(message,404));
         }
         const user = await User.findOneAndUpdate({email:email},{isVerified:true});
-        const data = {user,token: User.generateJWT()}    
+        const data = {user,token: generateJWT(user)}    
         console.log(data)
         const response = sendSuccessApiResponse(data);
         res.status(200).json(response);

@@ -4,6 +4,7 @@ const express = require("express");
 const mongoose = require('mongoose')
 const httpContext = require("express-http-context");
 const notFound = require("./errors/notFound");
+const errorHandler = require("./errors/errorHandler");
 const path = require('path')
 const router = require("./routes");
 
@@ -45,6 +46,7 @@ app.use(httpContext.middleware);
 app.use(router);
 
 // Error handling
+app.use(errorHandler)
 app.use(notFound);
 
 module.exports = app;
