@@ -1,12 +1,11 @@
 const express = require("express");
-const routerV1 = require("./v1");
+const auth = require("./auth.route");
 
 const router = express.Router();
 
 router.get("/", (req, res) => {
     res.send("SPC API server is running!!!");
 });
-
-router.use("/api/v1", routerV1);
+router.use("/auth",auth);
 
 module.exports = router;
