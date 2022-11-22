@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const path= require("path");
 const schema = mongoose.Schema;
 
 const productSchema = new schema({
@@ -6,10 +7,10 @@ const productSchema = new schema({
     type: String,
     require: true
   },
-  // category:{
-  //   type: String,
-  //   require: true
-  // },
+  category:{
+    type: String,
+    require: true
+  },
   quantity:{
     type: Number,
     require: true
@@ -22,10 +23,10 @@ const productSchema = new schema({
     type: Number,
     require:true
   },
-  imageUrl:{
+  imageUrl:[{
     type: String,
-    require:true
-  },
+    default: path.join('images','noprofile.png')
+  }],
   eachrating:[{
     user:{ 
       type: schema.Types.ObjectId,
