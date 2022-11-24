@@ -1,6 +1,7 @@
 const express = require("express");
 const { createCustomError } = require("../errors/customAPIError");
 const { sendSuccessApiResponse } = require("../middleware/successApiResponse");
+const APIFeatures = require("../utils/APIfeature");
 const Product = require("../model/product")
 const asyncWrapper = require("../utils/asyncWrapper");
 
@@ -42,9 +43,16 @@ const viewproduct = async (req, res, next) => {
       return createCustomError(err,400);
   }
 };
-
+const searchProduct = asyncWrapper(async (req,res,next)=>{
+    const SearchString = ["name","category"];
+    const query = new APIFeatures(Product.find(),req.query).search(SearchString);
+    const data = await query.query;
+    const response = sendSuccessApiResponse(data);
+    res.json(response);
+})
 
 module.exports = {
     listproduct,
-    viewproduct
+    viewproduct,
+    searchProduct
 };
