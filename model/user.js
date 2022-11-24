@@ -45,6 +45,10 @@ const userSchema = new mongoose.Schema(
         location:{
             type:String
         },
+        wishlist:[{
+            type:schema.Types.ObjectId,
+            ref:"product"
+        }],
         role: {
             type:String,
             enum :{
@@ -63,7 +67,7 @@ const userSchema = new mongoose.Schema(
         },
         cart:[{
             type:schema.Types.ObjectId,
-            ref:"Product"
+            ref:"product"
         }],
         isActive: {
             type: Boolean,

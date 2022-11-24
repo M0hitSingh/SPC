@@ -9,6 +9,10 @@ const productSchema = new schema({
   },
   category:{
     type: String,
+    enum :{
+      values: ["Soap", "Other"],
+      message: "Please select Soap or Other",
+    },
     require: true
   },
   quantity:{
@@ -30,7 +34,7 @@ const productSchema = new schema({
   eachrating:[{
     user:{ 
       type: schema.Types.ObjectId,
-      ref:'users'
+      ref:'user'
     },
     rate:{
     type: Number,

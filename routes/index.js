@@ -2,6 +2,7 @@ const express = require("express");
 const auth = require("./auth.route");
 const admin = require("./admin.route");
 const product = require("./product.route");
+const user = require("./user.route");
 const router = express.Router();
 
 router.get("/", (req, res) => {
@@ -10,6 +11,7 @@ router.get("/", (req, res) => {
 router.use("/auth",auth);
 router.use("/admin",admin);
 router.use("/product",product);
+router.use("/user",user);
 
 
 module.exports = router;

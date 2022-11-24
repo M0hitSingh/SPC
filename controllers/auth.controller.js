@@ -41,7 +41,7 @@ const refreshToken= async (req, res, next) => {
 };
 
 generateJWT = function (user) {
-    return jwt.sign({ userId: this._id, role: this.role }, process.env.JWT_SECRET, {
+    return jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRATION,
     });
 };
@@ -56,12 +56,12 @@ const registerUser = async (req, res, next) => {
             gender,
             role,
         } = req.body;
-    
+        const hashedPassword = await bcrypt.hash(password, 12);
         const toStore = {
             firstName,
             lastName,
             email,
-            password,
+            password:hashedPassword,
             phoneNumber,
             gender,
             role,
@@ -78,14 +78,16 @@ const registerUser = async (req, res, next) => {
         const OTP = await Otp.updateOne({email:email},{email:email , otp:OTPgen},{upsert:true});
         Email.sendEmail(email,OTPgen);
         const notVerifiedUser = await User.find({email:email});
+        console.log(notVerifiedUser);
         if(notVerifiedUser.length){
             console.log(notVerifiedUser);
             res.json(sendSuccessApiResponse(notVerifiedUser,200));
         }
         else{
-            console.log(1)
             const user = await User.create(toStore);
-            res.json(sendSuccessApiResponse(user, 201));
+            const response = sendSuccessApiResponse(user)
+            console.log(response)
+            res.json(response);
         }
     }
     catch(err){
@@ -106,12 +108,11 @@ const loginUser = async (req, res, next) => {
             return next(createCustomError(message, 401));
         }   
     
-        const isPasswordRight = await bcrypt.compare(candidatePassword, emailExists.password);
+        const isPasswordRight = await bcrypt.compare(password, emailExists.password);
         if (!isPasswordRight) {
             const message = "Invalid credentials";
             return next(createCustomError(message, 401));
         }
-    
         const data = {
             firstName: emailExists.firstName,
             lastName: emailExists.lastName,

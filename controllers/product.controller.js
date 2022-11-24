@@ -13,7 +13,6 @@ const listproduct = async (req, res, next) => {
             return next(createCustomError(message, 403));
         }
         else{
-          console.log(1);
             res.json(sendSuccessApiResponse(products, 200));
         }
     }
