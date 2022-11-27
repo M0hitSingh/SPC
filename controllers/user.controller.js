@@ -60,11 +60,56 @@ const removeCart = asyncWrapper(async (req,res,next)=>{
 
 
 
+const ratingandreview = asyncWrapper(async (req,res,next)=>{
+ const {productid} = req.params;
+    const userId = req.user.userId;
+    const {rating, review}= req.body;
+
+    const user = await User.findById(userId);
+    if(!user)
+    {
+        const message = "Not registered";
+        return next(createCustomError(message, 403));
+    }
+    const prodindex = user.orderhistory.findIndex(i => i==productid);
+    if(prodindex == -1)
+    {
+        const message = "Can't rate or review. Buy first";
+        return next(createCustomError(message, 400));
+    }
+    const product = await Product.findById(productid);
+    if(!product)
+    {
+        const message = "Not found";
+        return next(createCustomError(message, 403));
+    }
+    let total = product.avgrating * product.eachrating.length;
+
+    const ratingindex = product.eachrating.findIndex(i=>(i.user)==userId)
+    
+    if(ratingindex == -1)
+    product.eachrating[product.eachrating.length] = {user:userId, rate:rating,userreview:review};
+    else
+    {
+        total-= product.eachrating[ratingindex].rate;
+        product.eachrating[ratingindex] = {user:userId, rate:rating,userreview:review};
+    }
+
+    total += rating;
+    total /= product.eachrating.length;
+    user.avgrating = total;
+    await product.save();
+    const response = sendSuccessApiResponse(product,200);
+    res.json(response);
+})
+
+
 module.exports = {
     getAllwishlist,
     addWishlist,
     removeWishlist,
     getCart,
     removeCart,
-    addCart
+    addCart,
+    ratingandreview
 };
