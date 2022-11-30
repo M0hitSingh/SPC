@@ -71,6 +71,10 @@ const userSchema = new mongoose.Schema(
                 ref:"product"
             }
         }],
+        orderhistory:[{
+            type:schema.Types.ObjectId,
+            ref:"product"
+        }],
         isActive: {
             type: Boolean,
             default: true,
