@@ -48,8 +48,7 @@ generateJWT = function (user) {
 const registerUser = async (req, res, next) => {
     try{
         const {
-            firstName,
-            lastName,
+            Name,
             email,
             password,
             phoneNumber,
@@ -58,14 +57,14 @@ const registerUser = async (req, res, next) => {
         } = req.body;
         const hashedPassword = await bcrypt.hash(password, 12);
         const toStore = {
-            firstName,
-            lastName,
+            Name,
             email,
             password:hashedPassword,
             phoneNumber,
             gender,
             role,
         };
+        console.log("register");
         const emailisActive = await User.findOne({ email, isActive: true , isVerified:true});
         if (emailisActive) {
             const message = "Email is already registered";
@@ -85,6 +84,7 @@ const registerUser = async (req, res, next) => {
         }
         else{
             const user = await User.create(toStore);
+            console.log(user);
             const response = sendSuccessApiResponse(user)
             console.log(response)
             res.json(response);
@@ -98,14 +98,13 @@ const registerUser = async (req, res, next) => {
 const loginUser = async (req, res, next) => {
     try{
         const { email, password } = req.body;
-
-        const emailExists = await User.findOne(
-            { email, isActive: true , isVerified:true},
-            "firstName lastName email username password role"
+        console.log("login");
+        const emailExists = await User.findOne({ email:email, isActive: true , isVerified:true},
+            "Name email username password role"
         );
         if (!emailExists) {
-            const message = "Invalid credentials";
-            return next(createCustomError(message, 401));
+            const message = "User Not Found";
+            return next(createCustomError(message, 404));
         }   
     
         const isPasswordRight = await bcrypt.compare(password, emailExists.password);
@@ -114,12 +113,10 @@ const loginUser = async (req, res, next) => {
             return next(createCustomError(message, 401));
         }
         const data = {
-            firstName: emailExists.firstName,
-            lastName: emailExists.lastName,
+            Name: emailExists.Name,
             email: emailExists.email,
             token: generateJWT(emailExists),
         };
-    
         res.status(200).json(sendSuccessApiResponse(data));
     }
     catch(err){

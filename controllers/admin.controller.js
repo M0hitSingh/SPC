@@ -17,11 +17,11 @@ const addproduct = async (req, res, next) => {
       price
       } = req.body;
     const image = req.files;
-
+      console.log(req.files)
     const imageUrl=[];
     if(image){
     image.forEach(image=>{
-      imageUrl.push(image.path);
+      imageUrl.push("/public/"+image.originalname);
     })
   }
   const toStore = {

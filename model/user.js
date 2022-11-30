@@ -6,13 +6,9 @@ const schema = mongoose.Schema;
 
 const userSchema = new mongoose.Schema(
     {
-        firstName: {
+        Name: {
             type: String,
-            required: [true, "Please provide first name"],
-            trim: true,
-        },
-        lastName: {
-            type: String,
+            required: [true, "Please provide Name"],
             trim: true,
         },
         email: {
@@ -34,14 +30,14 @@ const userSchema = new mongoose.Schema(
             required: [true, "Please provide phone number"],
             trim: true,
         },
-        gender: {
-            type: String,
-            required: [true, "Please provide gender"],
-            enum: {
-                values: ["Male", "Female", "Others"],
-                message: "Please choose from Male, Female or Others",
-            },
-        },
+        // gender: {
+        //     type: String,
+        //     required: [true, "Please provide gender"],
+        //     enum: {
+        //         values: ["Male", "Female", "Others"],
+        //         message: "Please choose from Male, Female or Others",
+        //     },
+        // },
         location:{
             type:String
         },
@@ -66,8 +62,14 @@ const userSchema = new mongoose.Schema(
             trim: true,
         },
         cart:[{
-            type:schema.Types.ObjectId,
-            ref:"product"
+            quantity:{
+                type:Number,
+                default:0
+            },
+            product:{
+                type:schema.Types.ObjectId,
+                ref:"product"
+            }
         }],
         isActive: {
             type: Boolean,
