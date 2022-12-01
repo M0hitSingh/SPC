@@ -3,40 +3,14 @@ const createCustomError = require("../errors/customAPIError")
 
 const transactionSchema = new mongoose.Schema(
     {
-        basicInformation: {
-            referenceNumber: {
-                type: Number,
-                required: [true, "Please provide Reference Number"],
-            },
-            date: {
-                type: Date,
-                required: [true, "Please provide date"],
-            }
+        date: {
+            type: Date,
+            default:Date.now()
         },
-        amountDetails: [
-            {
-                influencerCategory: {
-                    type: mongoose.Types.ObjectId,
-                    ref: "PriceMaster",
-                },
-                qty: {
-                    type: Number,
-                    required: [true, "Please provide qty of influencers"],
-                },
-                costPerInfluencer: {
-                    type: Number,
-                },
-                amount: {
-                    type: Number,
-                },
-            },
-        ],
         method: {
             type: String,
             trim: true,
         },
-        
-        
         razorpayDetails: {
             amount: {
                 type: Number,
@@ -54,9 +28,6 @@ const transactionSchema = new mongoose.Schema(
                 trim: true,
             },
         },
-        gstAmount: {
-            type: Number,
-        },
         status: {
             type: String,
             enum: {
@@ -68,6 +39,15 @@ const transactionSchema = new mongoose.Schema(
         amount: {
             type: Number,
         },
+        Item:[{
+            quantity:{
+                type:Number
+            },
+            product:{
+                type:schema.Types.ObjectId,
+                ref:"product"
+            }
+        }],
         isActive: {
             type: Boolean,
             default: true,
