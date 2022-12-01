@@ -49,6 +49,11 @@ const paymentSchema = new mongoose.Schema(
             required: [true, "Please provide CreatedBy"],
             ref: "User",
         },
+        createdAt: { 
+            type: Date,
+            expires: "1d",
+            default: Date.now 
+        },
     },
     { timestamps: true }
 );

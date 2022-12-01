@@ -7,8 +7,8 @@ const asyncWrapper = require("../utils/asyncWrapper");
 const crypto = require('crypto');
 
 let instance = new Razorpay({
-    key_id:'rzp_test_OJiQYnuFVOUynK',
-    key_secret:'NpjldKMut5vojNuW5XWDFgFo'
+    key_id:process.env.key_id,
+    key_secret:process.env.key_secret
 })
 
 const createOrder = asyncWrapper(async (req, res, next) => {
@@ -26,7 +26,6 @@ const createOrder = asyncWrapper(async (req, res, next) => {
             const message = "Cannot create Order";
             return next(createCustomError(message, 400));
         }
-        console.log(order);
         paymentData = {
             currency:order.currency,
             amount: order.amount,
@@ -65,24 +64,22 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
     }
     let body = payment.razorpay.id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
-    .createHmac("sha256", "Wok5mJv2F0pa5HKLeXZfUr9r")
+    .createHmac("sha256", process.env.key_secret)
     .update(body.toString())
     .digest("hex");
-    console.log(expectedSignature);
-    console.log(razorpay_signature);
     const isVerified = expectedSignature===razorpay_signature? true:false;
-    console.log(isVerified);
     if (isVerified) {
         const updateData = {
             paid: true,
             "razorpay.paymentId": razorpay_payment_id,
             "razorpay.singature": razorpay_signature,
-            "status": "Completed"
+            "status": "Completed",
+            "createdAt.expires":"10d"
         };
         await Payment.findByIdAndUpdate(id, updateData);
         const user = await User.findById(req.user.userId);
         user.cart=[];
-        user.orderhistory.push_back(id);
+        user.orderhistory.push(id);
         await user.save();
         const response = sendSuccessApiResponse({ verfied: isVerified });
         res.status(200).json(response);
