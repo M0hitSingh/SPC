@@ -30,7 +30,7 @@ const paymentSchema = new mongoose.Schema(
         status: {
             type: String,
             enum: {
-                values: ["pending", "onHold", "completed", "cancelled"],
+                values: ["pending", "onHold", "completed", "cancelled","delivered"],
                 message: "Please provide status value pending, onHold, completed, cancelled",
             },
             default: "pending",

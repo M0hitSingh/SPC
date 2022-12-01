@@ -8,7 +8,7 @@ const { authorization } = require("../middleware/authorization");
 const router = express.Router();
 
 router.route("/order").post(authorization,createOrder);
-router.route("/login").post(authorization,verifyPayment);
+router.route("/verify").post(authorization,verifyPayment);
 
 module.exports = router;
 
