@@ -73,7 +73,7 @@ const userSchema = new mongoose.Schema(
         }],
         orderhistory:[{
             type:schema.Types.ObjectId,
-            ref:"Transaction"
+            ref:"Payment"
         }],
         isActive: {
             type: Boolean,

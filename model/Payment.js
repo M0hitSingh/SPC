@@ -2,10 +2,6 @@ const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema(
     {
-        transaction: {
-            type: mongoose.Types.ObjectId,
-            ref: "Transaction",
-        },
         currency: {
             type: String,
             required: [true, "Please provide currency"],
@@ -31,6 +27,23 @@ const paymentSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        status: {
+            type: String,
+            enum: {
+                values: ["pending", "onHold", "completed", "cancelled"],
+                message: "Please provide status value pending, onHold, completed, cancelled",
+            },
+            default: "pending",
+        },
+        Item:[{
+            quantity:{
+                type:Number
+            },
+            product:{
+                type:mongoose.Types.ObjectId,
+                ref:"product"
+            }
+        }],
         createdBy: {
             type: mongoose.Types.ObjectId,
             required: [true, "Please provide CreatedBy"],
