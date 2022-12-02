@@ -1,10 +1,12 @@
 const { createCustomError } = require("../errors/customAPIError");
 const { sendSuccessApiResponse } = require("../middleware/successApiResponse");
 const Payment = require("../model/Payment");
+const Transaction = require("../model/Transaction");
 const User = require("../model/User");
 const Razorpay = require('razorpay');
 const asyncWrapper = require("../utils/asyncWrapper");
 const crypto = require('crypto');
+const Product = require("../model/product");
 
 let instance = new Razorpay({
     key_id:process.env.key_id,
@@ -33,7 +35,7 @@ const createOrder = asyncWrapper(async (req, res, next) => {
             createdBy: createdBy,
         };
     })
-    const payment = await Payment.create(paymentData);
+    const payment = await Transaction.create(paymentData);
 
     try{
         const user = await User.findById(req.user.userId);
@@ -57,7 +59,7 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
     const createdBy = req.user.userId;
     const { id, razorpay_payment_id, razorpay_signature } = req.body;
 
-    const payment = await Payment.findById(id);
+    const payment = await Transaction.findById(id);
     if (!payment) {
         const message = `Cannot find payment with id: ${id}`;
         return next(createCustomError(message, 400));
@@ -73,11 +75,18 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
             paid: true,
             "razorpay.paymentId": razorpay_payment_id,
             "razorpay.singature": razorpay_signature,
-            "status": "Completed",
-            "createdAt.expires":"10d"
+            "status": "Completed"
         };
-        await Payment.findByIdAndUpdate(id, updateData);
+        await Transaction.findByIdAndUpdate(id, updateData);
+        const obj = new Payment(
+            payment
+        )
+        await obj.save();
+        payment.remove();
         const user = await User.findById(req.user.userId);
+        await Promise.all(user.cart.map(async (x) => {
+            const prod = await Product.findByIdAndUpdate(x.product,{quantity:quantity-x.quantity});
+          }));
         user.cart=[];
         user.orderhistory.push(id);
         await user.save();

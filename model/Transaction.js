@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const paymentSchema = new mongoose.Schema(
+const transactionschema = new mongoose.Schema(
     {
         currency: {
             type: String,
@@ -49,8 +49,10 @@ const paymentSchema = new mongoose.Schema(
             required: [true, "Please provide CreatedBy"],
             ref: "User",
         },
+        createdAt: { type: Date, expires: "5m", default: Date.now },
     },
-    { timestamps: true }
+    { timestamps: true },
+    
 );
 
-module.exports = mongoose.model("Payment",paymentSchema);
+module.exports = mongoose.model("Transaction",transactionschema);
