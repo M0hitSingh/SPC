@@ -7,6 +7,7 @@ const Razorpay = require('razorpay');
 const asyncWrapper = require("../utils/asyncWrapper");
 const crypto = require('crypto');
 const Product = require("../model/product");
+const mongoose = require("mongoose");
 
 let instance = new Razorpay({
     key_id:process.env.key_id,
@@ -58,8 +59,9 @@ const createOrder = asyncWrapper(async (req, res, next) => {
 const verifyPayment = asyncWrapper(async (req, res, next) => {
     const createdBy = req.user.userId;
     const { id, razorpay_payment_id, razorpay_signature } = req.body;
-
-    const payment = await Transaction.findById(id);
+    const Id = mongoose.Types.ObjectId(id);
+    const payment = await Transaction.findById(Id);
+    const orid = payment.razorpay.id;
     if (!payment) {
         const message = `Cannot find payment with id: ${id}`;
         return next(createCustomError(message, 400));
@@ -72,23 +74,37 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
     const isVerified = expectedSignature===razorpay_signature? true:false;
     if (isVerified) {
         const updateData = {
-            paid: true,
             "razorpay.paymentId": razorpay_payment_id,
             "razorpay.singature": razorpay_signature,
-            "status": "Completed"
         };
-        await Transaction.findByIdAndUpdate(id, updateData);
-        const obj = new Payment(
-            payment
-        )
-        await obj.save();
-        payment.remove();
-        const user = await User.findById(req.user.userId);
+        // console.log(payment);
+        
+        const pay={ 
+     razorpay:payment.razorpay,
+  currency:payment.currency,
+  amount :payment.amount,
+  createdBy:payment.createdBy,
+  Item:payment.Item,
+  paid: true,
+  status: "Completed"
+    }
+        const obj = await Payment.create(pay);
+        await payment.remove();
+        const pId = await Payment.findOneAndUpdate({'razorpay.id': orid},updateData)
+        // console.log(pId);
+        const user = await User.findById(req.user.userId).populate('cart.product');
+        console.log("hello");
         await Promise.all(user.cart.map(async (x) => {
-            const prod = await Product.findByIdAndUpdate(x.product,{quantity:quantity-x.quantity});
-          }));
+            const pro = await Product.findByIdAndUpdate((x.product._id).toString(),{
+               $inc:{
+                   quantity: -x.quantity
+                }
+            }
+            );
+         }));
         user.cart=[];
-        user.orderhistory.push(id);
+        user.orderhistory.push(pId);
+        // console.log(user);
         await user.save();
         const response = sendSuccessApiResponse({ verfied: isVerified });
         res.status(200).json(response);
