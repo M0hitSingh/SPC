@@ -3,6 +3,9 @@ const { createCustomError } = require("../errors/customAPIError");
 const { sendSuccessApiResponse } = require("../middleware/successApiResponse");
 const Product = require("../model/product");
 const User = require("../model/User");
+const Payment = require("../model/Payment");
+const mongoose = require("mongoose")
+
 const asyncWrapper = require("../utils/asyncWrapper");
 
 
@@ -25,7 +28,7 @@ const addWishlist = asyncWrapper(async (req,res,next)=>{
 
 const removeWishlist = asyncWrapper(async (req,res,next)=>{
     const userId = req.user.userId;
-    const wishlist = req.body.wishlist;
+    const wishlist = req.params.wishlist;
     const doc = await User.findOneAndUpdate({_id:userId},{"$pull":{wishlist:wishlist}});
     if(!doc) return next(createCustomError("User Not Found",404));
     const response = sendSuccessApiResponse(doc,200);
@@ -63,8 +66,10 @@ const addCart = asyncWrapper(async (req,res,next)=>{
 
 const removeCart = asyncWrapper(async (req,res,next)=>{
     const userId = req.user.userId;
-    const cart = req.body.cart;
-    const doc = await User.findOneAndUpdate({_id:userId},{"$pull":{cart:{_id:cart}}});
+    const cart = req.params.cart;
+    // console.log(cart);
+    const doc = await User.findOneAndUpdate({_id:userId},{"$pull":{cart:{_id:cart}}}).exec();
+    // console.log(doc)
     if(!doc) return next(createCustomError("User Not Found",404));
     const response = sendSuccessApiResponse("Remove from cart",200);
     res.json(response);
@@ -115,6 +120,29 @@ const ratingandreview = asyncWrapper(async (req,res,next)=>{
     res.json(response);
 })
 
+const vieworderhistory = asyncWrapper(async (req,res,next)=>{
+    const userId = req.user.userId;
+    const doc = await User.findById(userId).populate({ 
+        path: 'orderhistory',
+        populate: {
+          path: 'Item.product',
+          model: 'product'
+        } 
+     })
+    if(!doc) return next(createCustomError("User Not Found",404));
+    const response = sendSuccessApiResponse(doc.orderhistory,200);
+    res.json(response);
+})
+
+const viewsingleorder = asyncWrapper(async (req,res,next)=>{
+    const userId = req.user.userId;
+    const {id} = req.params;
+    const doc = await User.findOne({orderhistory:{$in:[id]}});
+    if(!doc) return next(createCustomError("User Not Found",404));
+    const order = await Payment.findById(id);
+    const response = sendSuccessApiResponse(order,200);
+    res.json(response);
+})
 
 module.exports = {
     getAllwishlist,
@@ -123,5 +151,7 @@ module.exports = {
     getCart,
     removeCart,
     addCart,
-    ratingandreview
+    ratingandreview,
+    vieworderhistory,
+    viewsingleorder
 };
