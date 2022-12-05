@@ -2,7 +2,7 @@ const express = require("express");
 const { createCustomError } = require("../errors/customAPIError");
 const { sendSuccessApiResponse } = require("../middleware/successApiResponse");
 const Product = require("../model/product");
-const User = require("../model/User");
+const User = require("../model/user");
 const Payment = require("../model/Payment");
 const mongoose = require("mongoose")
 
