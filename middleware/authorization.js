@@ -1,7 +1,7 @@
 const express = require('express')
 const jwt = require('jsonwebtoken')
 const { createCustomError } =  require("../errors/customAPIError");
-const User =  require("../model/User");
+const User =  require("../model/user");
 
 const errorMessage = "You do not have permissions to perform this action";
 
