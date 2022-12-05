@@ -1,7 +1,7 @@
 const express = require("express");
 const { createCustomError } = require("../errors/customAPIError");
 const { sendSuccessApiResponse } = require("../middleware/successApiResponse");
-const User = require("../model/User");
+const User = require("../model/user");
 const Product = require("../model/product")
 const asyncWrapper = require("../utils/asyncWrapper");
 

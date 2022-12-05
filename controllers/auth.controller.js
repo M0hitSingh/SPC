@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const { createCustomError } = require("../errors/customAPIError");
 const { sendSuccessApiResponse } = require("../middleware/successApiResponse");
 const Otp = require("../model/Otp");
-const User = require("../model/User")
+const User = require("../model/user")
 const Email = require("../utils/sendgrid");
 const asyncWrapper = require("../utils/asyncWrapper");
 
