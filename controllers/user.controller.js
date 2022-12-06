@@ -16,7 +16,14 @@ const getAllwishlist = asyncWrapper(async (req,res,next)=>{
     const response = sendSuccessApiResponse(doc,200);
     res.json(response);
 })
-
+const isWishlist = asyncWrapper(async (req,res,next)=>{
+    const userId = req.user.userId;
+    const {id} = req.params;
+    const doc = await User.findById(userId);
+    const val = doc.wishlist.findIndex(result => result._id.toString()==id)
+    const response = val==-1? false:true
+    res.json(sendSuccessApiResponse(response,201));
+})
 const addWishlist = asyncWrapper(async (req,res,next)=>{
     const userId = req.user.userId;
     const wishlist = req.body.wishlist;
@@ -143,7 +150,14 @@ const viewsingleorder = asyncWrapper(async (req,res,next)=>{
     const response = sendSuccessApiResponse(order,200);
     res.json(response);
 })
-
+const iscart = asyncWrapper(async(req,res,next)=>{
+    const userId = req.user.userId;
+    const {id} = req.params;
+    const doc = await User.findById(userId);
+    const val = doc.cart.findIndex(result => result.product.toString()==id)
+    const response = val==-1? false:true
+    res.json(sendSuccessApiResponse(response,201));
+})
 module.exports = {
     getAllwishlist,
     addWishlist,
@@ -153,5 +167,7 @@ module.exports = {
     addCart,
     ratingandreview,
     vieworderhistory,
-    viewsingleorder
+    viewsingleorder,
+    iscart,
+    isWishlist
 };
