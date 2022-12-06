@@ -1,5 +1,6 @@
 const { createCustomError } = require("../errors/customAPIError");
 const { sendSuccessApiResponse } = require("../middleware/successApiResponse");
+const jwt = require("jsonwebtoken");
 const Payment = require("../model/Payment");
 const Transaction = require("../model/Transaction");
 const User = require("../model/user");
@@ -112,8 +113,44 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
     else return next(createCustomError("Not a valid Signature",402));
 
 });
+generateJWT = function (Payment) {
+    return ;
+};
+const genrateQR = asyncWrapper(async(req,res,next)=>{
+    const paymentId = req.body.paymentId;
+    const result = await Payment.findById(paymentId);
+    const token = jwt.sign({id:result._id,userId:req.user.userId ,singature: result.razorpay.singature, paymentId: result.razorpay.paymentId }, process.env.JWT_SECRET, {
+        expiresIn: '365d',
+    })
+    const response = token
+    res.json(sendSuccessApiResponse( response));
+})
+const verifyQR = asyncWrapper(async(req,res,next)=>{
+    const token = req.params.token
+    const payload =await jwt.verify(token.toString(), process.env.JWT_SECRET);
+    const isUser = await User.findById(payload.userId);
+    const val = isUser.orderhistory.findIndex(result => result._id.toString()==payload.id)
+    if(val!=-1){
+        const payment = await Payment.findById(payload.id);
+        if(payment.razorpay.singature === payload.singature && payment.razorpay.paymentId === payload.paymentId){
+            if(payment.status == 'delivered'){
+                return res.json(createCustomError("Already Deliverd",401));
+            }
+            payment.status = 'delivered'
+            await payment.save();
+            return res.json(sendSuccessApiResponse(isUser,200));
+        }
+        return res.json(createCustomError("No Payment Found",404));
+    }
+    res.json(createCustomError("Unauthorized User",402));
+
+    // if(payload.signature==)
+    
+})
 
 module.exports = {
     createOrder,
-    verifyPayment
+    verifyPayment,
+    genrateQR,
+    verifyQR
 };
