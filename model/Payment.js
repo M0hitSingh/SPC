@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema(
     {
+        paymentId:{
+            type:String,
+            required :true
+        },
         currency: {
             type: String,
             required: [true, "Please provide currency"],

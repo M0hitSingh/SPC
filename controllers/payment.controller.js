@@ -81,20 +81,20 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
         // console.log(payment);
         
         const pay={ 
-     razorpay:payment.razorpay,
-  currency:payment.currency,
-  amount :payment.amount,
-  createdBy:payment.createdBy,
-  Item:payment.Item,
-  paid: true,
-  status: "Completed"
-    }
+            paymentId:razorpay_payment_id,
+            razorpay:payment.razorpay,
+            currency:payment.currency,
+            amount :payment.amount,
+            createdBy:payment.createdBy,
+            Item:payment.Item,
+            paid: true,
+            status: "Completed"
+        }
         const obj = await Payment.create(pay);
         await payment.remove();
         const pId = await Payment.findOneAndUpdate({'razorpay.id': orid},updateData)
         // console.log(pId);
         const user = await User.findById(req.user.userId).populate('cart.product');
-        console.log("hello");
         await Promise.all(user.cart.map(async (x) => {
             const pro = await Product.findByIdAndUpdate((x.product._id).toString(),{
                $inc:{
@@ -118,7 +118,9 @@ generateJWT = function (Payment) {
 };
 const genrateQR = asyncWrapper(async(req,res,next)=>{
     const paymentId = req.body.paymentId;
-    const result = await Payment.findById(paymentId);
+    console.log(paymentId)
+    const result = await Payment.findOne({paymentId:paymentId});
+    console.log(result)
     const token = jwt.sign({id:result._id,userId:req.user.userId ,singature: result.razorpay.singature, paymentId: result.razorpay.paymentId }, process.env.JWT_SECRET, {
         expiresIn: '365d',
     })
