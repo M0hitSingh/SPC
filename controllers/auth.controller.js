@@ -10,6 +10,11 @@ const User = require("../model/user")
 const Email = require("../utils/sendgrid");
 const asyncWrapper = require("../utils/asyncWrapper");
 
+function generateJWT(user){
+    return jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRATION,
+    });
+}
 const refreshToken= async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer")) {

@@ -134,7 +134,7 @@ const verifyQR = asyncWrapper(async(req,res,next)=>{
         const payment = await Payment.findById(payload.id);
         if(payment.razorpay.singature === payload.singature && payment.razorpay.paymentId === payload.paymentId){
             if(payment.status == 'delivered'){
-                return res.json(createCustomError("Already Deliverd",401));
+                return res.json(createCustomError("Already Deliverd",301));
             }
             payment.status = 'delivered'
             await payment.save();
