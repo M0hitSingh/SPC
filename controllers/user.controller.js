@@ -46,6 +46,13 @@ const getCart = asyncWrapper(async (req,res,next)=>{
     const userId = req.user.userId;
     const doc = await User.findById(userId).populate("cart.product")
     if(!doc) return next(createCustomError("User Not Found",404));
+    await Promise.all(doc.cart.map(async (x) => {
+        const pro = await Product.findById(x.product);
+        if(x.quantity > pro.quantity)
+        {
+            x.quantity = pro.quantity;
+        }
+     }));
     const response = sendSuccessApiResponse(doc,200);
     res.json(response);
 })
@@ -57,16 +64,25 @@ const addCart = asyncWrapper(async (req,res,next)=>{
     const doc = await User.findOne({_id:userId});
     if(!doc) return next(createCustomError("User Not Found",404));
     const val = doc.cart.findIndex(result => result.product.toString()==cart);
-    if(val==-1) await User.findOneAndUpdate({_id:userId},{"$addToSet":{cart:{
+    const pro = await Product.findById(cart);
+    
+    if(val==-1 && pro.quantity != 0) 
+    await User.findOneAndUpdate({_id:userId},{"$addToSet":{cart:{
         quantity:1,
         product:cart
     }}});
     else{
-        dec == 'false' ? doc.cart[val].quantity++ : doc.cart[val].quantity-- ;
+        if(dec == false)
+        {
+            if(pro.quantity <= doc.cart[val].quantity)
+            return next(createCustomError("No more soaps available",400))
+        }
+        dec == false ? doc.cart[val].quantity++ : doc.cart[val].quantity-- ;
         await doc.save();
         const response = sendSuccessApiResponse("Quantity changed",200);
         return res.json(response);
     }
+    
     const response = sendSuccessApiResponse("Added to Cart",200);
     res.json(response);
 })
