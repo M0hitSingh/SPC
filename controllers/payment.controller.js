@@ -118,9 +118,8 @@ generateJWT = function (Payment) {
 };
 const genrateQR = asyncWrapper(async(req,res,next)=>{
     const paymentId = req.body.paymentId;
-    console.log(paymentId)
     const result = await Payment.findOne({paymentId:paymentId});
-    console.log(result)
+    if(!result) return next(createCustomError("No payment found",404));
     const token = jwt.sign({id:result._id,userId:req.user.userId ,singature: result.razorpay.singature, paymentId: result.razorpay.paymentId }, process.env.JWT_SECRET, {
         expiresIn: '365d',
     })
@@ -129,11 +128,16 @@ const genrateQR = asyncWrapper(async(req,res,next)=>{
 })
 const verifyQR = asyncWrapper(async(req,res,next)=>{
     const token = req.params.token
+    const view = req.query.view || false
     const payload =await jwt.verify(token.toString(), process.env.JWT_SECRET);
     const isUser = await User.findById(payload.userId);
     const val = isUser.orderhistory.findIndex(result => result._id.toString()==payload.id)
     if(val!=-1){
-        const payment = await Payment.findById(payload.id);
+        const payment = await Payment.findById(payload.id)
+        if(view){
+            const payment = await Payment.findById(payload.id,"status Item amount").populate("Item.product")
+            return res.json(payment).status(201);
+        }
         if(payment.razorpay.singature === payload.singature && payment.razorpay.paymentId === payload.paymentId){
             if(payment.status == 'delivered'){
                 return res.json(createCustomError("Already Deliverd",301));
