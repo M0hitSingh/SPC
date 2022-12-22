@@ -111,12 +111,7 @@ const ratingandreview = asyncWrapper(async (req,res,next)=>{
         const message = "Not registered";
         return next(createCustomError(message, 403));
     }
-    const prodindex = user.orderhistory.findIndex(i => i==productid);
-    if(prodindex == -1)
-    {
-        const message = "Can't rate or review. Buy first";
-        return next(createCustomError(message, 400));
-    }
+
     const product = await Product.findById(productid);
     if(!product)
     {
