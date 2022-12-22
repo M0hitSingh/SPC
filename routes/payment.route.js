@@ -10,7 +10,7 @@ const router = express.Router();
 router.route("/order").post(authorization,createOrder);
 router.route("/verify").post(authorization,verifyPayment);
 router.route("/generate").post(authorization,genrateQR);
-router.route("/verifyqr/:token").get(authorization,verifyQR);
+router.route("/verifyqr/:token").get(verifyQR);
 
 
 
