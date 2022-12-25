@@ -4,7 +4,9 @@ const {
     loginUser,
     refreshToken,
     registerUser,
-    otpValid
+    otpValid,
+    setPassword,
+    resendOTP
 } = require("../controllers/auth.controller");
 
 /**
@@ -19,7 +21,9 @@ router.route("/refresh-token").get(refreshToken);
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 router.route("/forgot-password").post(forgotPassword);
+router.route("/set-password").post(setPassword);
 router.route("/otp-verify").post(otpValid); 
+router.route("/otp").post(resendOTP); 
     
 
 

@@ -50,6 +50,19 @@ generateJWT = function (user) {
         expiresIn: process.env.JWT_EXPIRATION,
     });
 };
+const setPassword = asyncWrapper(async (req,res,next)=>{
+    const email = req.body.email;
+    const password = await bcrypt.hash(req.body.password, 12);
+    const user = await User.findOne({ email, isActive: true , isVerified:true });
+    if (!user) {
+        const message = `No user found with the email: ${email}`;
+        return next(createCustomError(message, 400));
+    }
+    user.password = password
+    await user.save();
+    res.json(sendSuccessApiResponse("Password Changed",201));
+
+})
 const registerUser = async (req, res, next) => {
     try{
         const {
@@ -154,6 +167,21 @@ const forgotPassword = async (req, res, next) => {
 
     }
 };
+const resendOTP = asyncWrapper(async (req,res,next)=>{
+    const email = req.body.email;
+    const user = await User.findOne({ email, isActive: true , isVerified:true });
+    if (user) {
+        const message = `user is already with the email: ${email}`;
+        return next(createCustomError(message, 400));
+    }
+    const OTP = await Otp.updateOne({email:email},{email:email , otp:OTPgen},{upsert:true});
+    await sendEmail({
+        email: email,
+        subject: "Your OTP (Valid for 5 minutes)",
+        message:`Your One Time Password is ${OTPgen}`
+    });
+    res.status(200).json('OTP resend')
+})
 const otpValid = async (req, res, next) => {
     try{
         const {otp,email} = req.body;
@@ -239,5 +267,7 @@ module.exports = {
     loginUser,
     forgotPassword,
     otpValid,
-    refreshToken
+    refreshToken,
+    setPassword,
+    resendOTP
 };
