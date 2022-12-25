@@ -56,7 +56,7 @@ const productSchema = new schema({
   }],
   avgrating:{ 
       type: Number,
-      require: false,
+      default:0
   }
 }
 )
