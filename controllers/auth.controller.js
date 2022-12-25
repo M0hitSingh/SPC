@@ -170,6 +170,10 @@ const resendOTP = asyncWrapper(async (req,res,next)=>{
         const message = `user is already with the email: ${email}`;
         return next(createCustomError(message, 400));
     }
+    const OTPgen = otpGenrator.generate(5,{
+        digits:true, lowerCaseAlphabets : false, upperCaseAlphabets:false,
+        specialChars:false
+    })
     const OTP = await Otp.updateOne({email:email},{email:email , otp:OTPgen},{upsert:true});
     Email.sendEmail(email,OTPgen);
     res.status(200).json('OTP resend')
