@@ -144,7 +144,7 @@ const loginUser = async (req, res, next) => {
 
 const forgotPassword = async (req, res, next) => {
     try{
-        const { email } = req.body;
+        const { email } = req.body.email;
         const user = await User.findOne({ email, isActive: true , isVerified:true });
         if (!user) {
             const message = `No user found with the email: ${email}`;
@@ -155,11 +155,7 @@ const forgotPassword = async (req, res, next) => {
             specialChars:false
         })
         const OTP = await Otp.updateOne({email:email},{email:email , otp:OTPgen},{upsert:true});
-        await sendEmail({
-            email: email,
-            subject: "Your OTP (Valid for 5 minutes)",
-            message:`Your One Time Password is ${OTPgen}`
-        });
+        Email.sendEmail(email,OTPgen);
         res.status(200).json('OTP send')
     }
     catch(err){
@@ -175,11 +171,7 @@ const resendOTP = asyncWrapper(async (req,res,next)=>{
         return next(createCustomError(message, 400));
     }
     const OTP = await Otp.updateOne({email:email},{email:email , otp:OTPgen},{upsert:true});
-    await sendEmail({
-        email: email,
-        subject: "Your OTP (Valid for 5 minutes)",
-        message:`Your One Time Password is ${OTPgen}`
-    });
+    Email.sendEmail(email,OTPgen);
     res.status(200).json('OTP resend')
 })
 const otpValid = async (req, res, next) => {
