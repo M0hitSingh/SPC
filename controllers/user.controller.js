@@ -118,21 +118,21 @@ const ratingandreview = asyncWrapper(async (req,res,next)=>{
         const message = "Not found";
         return next(createCustomError(message, 403));
     }
-    let total = product.avgrating * product.eachrating.length;
-
+    let total= 0;
+    if(product.eachrating.length != 0)
+     total = product.avgrating * product.eachrating.length;
     const ratingindex = product.eachrating.findIndex(i=>(i.user)==userId)
     
     if(ratingindex == -1)
-    product.eachrating[product.eachrating.length] = {user:userId, rate:rating,userreview:review};
+    product.eachrating[product.eachrating.length] = {user:userId,name:user.Name,date:new Date(), rate:rating,userreview:review};
     else
     {
         total-= product.eachrating[ratingindex].rate;
-        product.eachrating[ratingindex] = {user:userId, rate:rating,userreview:review};
+        product.eachrating[ratingindex] = {user:userId,name:user.Name, date:new Date(), rate:rating,userreview:review};
     }
-
     total += rating;
     total /= product.eachrating.length;
-    user.avgrating = total;
+    product.avgrating = total;
     await product.save();
     const response = sendSuccessApiResponse(product,200);
     res.json(response);

@@ -37,6 +37,12 @@ const productSchema = new schema({
       type: schema.Types.ObjectId,
       ref:'user'
     },
+    name:{
+      type: String,
+    },
+    date:{
+      type: Date
+    },
     rate:{
     type: Number,
     require: false,
