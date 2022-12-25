@@ -60,8 +60,9 @@ const setPassword = asyncWrapper(async (req,res,next)=>{
     }
     user.password = password
     await user.save();
-    res.json(sendSuccessApiResponse("Password Changed",201));
-
+    const data = {user,token: generateJWT(user)}    
+    const response = sendSuccessApiResponse(data);
+    res.status(201).json(response);
 })
 const registerUser = async (req, res, next) => {
     try{
