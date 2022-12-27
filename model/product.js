@@ -21,8 +21,7 @@ const productSchema = new schema({
     require: true
   },
   description:{
-    type: String,
-    require: true
+    type: String
   },
   price:{
     type: Number,

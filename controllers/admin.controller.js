@@ -64,24 +64,14 @@ const updateproduct = async (req, res, next) => {
         price,
         productid
       } = req.body;
-console.log(name);
       const image = req.files;
         
-      const imageUrl=[];
-      if(image){
-    
-        image.forEach(image=>{
-          imageUrl.push(image.path);
-        })
-      }
-      
       const toStore = {
         name,
         category,
         quantity,
         description,
-        price,
-        imageUrl
+        price
       };
       const user = await User.findById(id);
       if (!user) {
@@ -93,8 +83,15 @@ console.log(name);
         return next(createCustomError(message, 403));
       }
       else{
-        console.log(1)
+   
           const product = await Product.updateOne({_id:productid},toStore);
+          const Image = await Product.findById(productid);
+          if(image){
+            image.forEach(image=>{
+              Image.imageUrl.push(`/public/${image.filename}`);
+            })
+            await Image.save()
+          }
           res.json(sendSuccessApiResponse(product, 201));
       }
   }
