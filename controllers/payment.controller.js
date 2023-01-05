@@ -9,6 +9,7 @@ const asyncWrapper = require("../utils/asyncWrapper");
 const crypto = require('crypto');
 const Product = require("../model/product");
 const mongoose = require("mongoose");
+const Email = require("../utils/sendgrid");
 
 let instance = new Razorpay({
     key_id:process.env.key_id,
@@ -107,6 +108,8 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
         user.orderhistory.push(pId);
         // console.log(user);
         await user.save();
+        const payment = await Payment.findById(pId,"status Item amount").populate("Item.product")
+        Email.sendProductEmail(payment,user)
         const response = sendSuccessApiResponse({ verfied: isVerified });
         res.status(200).json(response);
     }
