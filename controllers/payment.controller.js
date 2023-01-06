@@ -109,7 +109,8 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
         // console.log(user);
         await user.save();
         const paymessage = await Payment.findById(pId,"status Item amount").populate("Item.product")
-        Email.sendProductEmail(paymessage,user)
+        console.log(paymessage)
+        // Email.sendProductEmail(paymessage,user)
         const response = sendSuccessApiResponse({ verfied: isVerified });
         res.status(200).json(response);
     }
