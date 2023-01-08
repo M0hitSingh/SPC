@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport(sendGridTransport({
     api_key: process.env.API_KEY
   }
 }))
-exports.sendProductEmail = (body,user) =>{
+exports.sendProductEmail = (body,user,amt) =>{
     transporter.sendMail({
         to:'golchigeek@gmail.com',
         from:'testingyourotp@gmail.com',
@@ -21,8 +21,8 @@ exports.sendProductEmail = (body,user) =>{
                 <h4>${user.Name} (${user.email})</h4>
                 <h4>Phone No. ${user.phoneNumber}</h4>
             <h3>Product Details</h3>
-            <h4>${body.Item}</h4>
-            <h5>Amount ${(body.amount)/100}</h5>
+            <h4>${body}</h4>
+            <h5>Amount ${(amt)/100}</h5>
         </body>
         </html>`   
     })
