@@ -4,7 +4,8 @@ const { sendSuccessApiResponse } = require("../middleware/successApiResponse");
 const User = require("../model/user");
 const Product = require("../model/product")
 const asyncWrapper = require("../utils/asyncWrapper");
-
+const path = require('path');
+const Payment = require("../model/Payment");
 
 const addproduct = async (req, res, next) => {
   try{
@@ -107,8 +108,60 @@ const deleteproduct = asyncWrapper(async(req,res,next)=>{
   res.json(sendSuccessApiResponse(result,200));
 })
 
+
+const orderlist = asyncWrapper(async (req,res,next)=>{
+  const doc = await Payment.find({}).populate('Item.product createdBy',
+  {
+    password:0, wishlist:0, role:0, isVerified:0, orderhistory:0, isActive:0,cart:0
+  }
+  )
+  if(!doc) return next(createCustomError("User Not Found",404));
+  const response = sendSuccessApiResponse(doc,200);
+  res.json(response);
+})
+
+
+const filterorders = asyncWrapper(async (req,res,next)=>{
+  const filter = req.query;
+  const doc = await Payment.find(filter).populate('Item.product createdBy',
+  {
+    password:0, wishlist:0, role:0, isVerified:0, orderhistory:0, isActive:0,cart:0
+  }
+  )
+  if(!doc) return next(createCustomError("User Not Found",404));
+  const response = sendSuccessApiResponse(doc,200);
+  res.json(response);
+})
+
+
+const changestatus = asyncWrapper(async(req,res,next)=>{
+  const {status,payid} = req.body;
+  const id = req.user.userId;
+  const user = await User.findById(id);
+      if (!user) {
+          const message = "Not registered";
+          return next(createCustomError(message, 403));
+      }
+      else if(user.role != "Admin"){
+        const message = "Not an admin";
+        return next(createCustomError(message, 403));
+      }
+      else{
+      const payment = await Payment.findById(payid);
+      if(!payment)
+      return res.json(createCustomError("No Payment Found",404));
+      payment.status = status
+      await payment.save();
+      return res.json(sendSuccessApiResponse('status updated',200));
+      }
+})
+
+
 module.exports = {
     addproduct,
     updateproduct,
-    deleteproduct
+    deleteproduct,
+    orderlist,
+    filterorders,
+    changestatus
 };
