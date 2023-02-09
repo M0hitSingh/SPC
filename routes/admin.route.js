@@ -1,7 +1,7 @@
 const express =  require("express");
 const upload = require("../middleware/fileupload");
 const {authorization} = require("../middleware/authorization")
-const { addproduct, updateproduct,deleteproduct, orderlist, filterorders, changestatus } = require("../controllers/admin.controller");
+const { addproduct, updateproduct,deleteproduct, orderlist, filterorders, changestatus, searchOrder } = require("../controllers/admin.controller");
 const asyncWrapper = require("../utils/asyncWrapper");
 const { createCustomError } = require("../errors/customAPIError");
 
@@ -15,6 +15,8 @@ router.route("/addproduct").post(authorization, upload.array( 'image', 5 ), addp
 router.route("/updateproduct").patch( authorization,upload.array( 'image', 5 ),updateproduct);
 router.route("/deleteproduct/:productid").delete( authorization,adminValidator,deleteproduct);
 router.route("/orderlist").get( authorization,orderlist);
+router.route("/orderlist/:search").get( authorization,searchOrder);
+
 router.route("/filterorder").get( authorization,filterorders);
 router.route("/updatestatus").patch( authorization,changestatus);
 

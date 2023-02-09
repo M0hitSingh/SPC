@@ -6,6 +6,7 @@ const Product = require("../model/product")
 const asyncWrapper = require("../utils/asyncWrapper");
 const path = require('path');
 const Payment = require("../model/Payment");
+const { default: mongoose, isObjectIdOrHexString } = require("mongoose");
 
 const addproduct = async (req, res, next) => {
   try{
@@ -115,11 +116,46 @@ const orderlist = asyncWrapper(async (req,res,next)=>{
     password:0, wishlist:0, role:0, isVerified:0, orderhistory:0, isActive:0,cart:0
   }
   )
-  if(!doc) return next(createCustomError("User Not Found",404));
+  if(!doc) return next(createCustomError("Order Not Found",404));
   const response = sendSuccessApiResponse(doc,200);
   res.json(response);
 })
 
+
+const searchOrder = asyncWrapper(async (req,res,next)=>{
+  const search = req.params.search;
+  let data=[];
+  if(isObjectIdOrHexString(search)){
+    const id = mongoose.Types.ObjectId(search)
+    const val = await Payment.findById(id).populate('Item.product createdBy',
+    {
+      password:0, wishlist:0, role:0, isVerified:0, orderhistory:0, isActive:0,cart:0
+    });
+    data.push(val);
+  }
+  else
+  {
+    const temp = await User.find(
+           { $or: [ 
+      {Name:{$regex:search,$options:"xi"}},
+      {email:{$regex:search,$options:"xi"}},
+      {phoneNumber:{$regex:search,$options:"xi"}}
+    ]}
+    )
+    if(temp)
+    for(var i=0;i<temp.length;i++){
+    x = await Payment.findOne({createdBy:temp[i]._id}).populate('Item.product createdBy',
+    {
+      password:0, wishlist:0, role:0, isVerified:0, orderhistory:0, isActive:0,cart:0
+    });
+    data.push(x);
+  }
+  }
+  if(!data) return next(createCustomError("Order Not Found",404));
+  
+  const response = sendSuccessApiResponse(data);
+  res.json(response);
+})
 
 const filterorders = asyncWrapper(async (req,res,next)=>{
   const filter = req.query;
@@ -163,5 +199,6 @@ module.exports = {
     deleteproduct,
     orderlist,
     filterorders,
-    changestatus
+    changestatus,
+    searchOrder
 };
