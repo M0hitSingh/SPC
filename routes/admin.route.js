@@ -15,7 +15,6 @@ router.route("/addproduct").post(authorization, upload.array( 'image', 5 ), addp
 router.route("/updateproduct").patch( authorization,upload.array( 'image', 5 ),updateproduct);
 router.route("/deleteproduct/:productid").delete( authorization,adminValidator,deleteproduct);
 router.route("/orderlist").get( authorization,orderlist);
-router.route("/orderlist/:search").get( authorization,searchOrder);
 
 router.route("/filterorder").get( authorization,filterorders);
 router.route("/updatestatus").patch( authorization,changestatus);

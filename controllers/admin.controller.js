@@ -122,44 +122,20 @@ const orderlist = asyncWrapper(async (req,res,next)=>{
 })
 
 
-const searchOrder = asyncWrapper(async (req,res,next)=>{
-  const search = req.params.search;
-  let data=[];
-  if(isObjectIdOrHexString(search)){
-    const id = mongoose.Types.ObjectId(search)
-    const val = await Payment.findById(id).populate('Item.product createdBy',
-    {
-      password:0, wishlist:0, role:0, isVerified:0, orderhistory:0, isActive:0,cart:0
-    });
-    data.push(val);
-  }
-  else
-  {
-    const temp = await User.find(
-           { $or: [ 
-      {Name:{$regex:search,$options:"xi"}},
-      {email:{$regex:search,$options:"xi"}},
-      {phoneNumber:{$regex:search,$options:"xi"}}
-    ]}
-    )
-    if(temp)
-    for(var i=0;i<temp.length;i++){
-    x = await Payment.findOne({createdBy:temp[i]._id}).populate('Item.product createdBy',
-    {
-      password:0, wishlist:0, role:0, isVerified:0, orderhistory:0, isActive:0,cart:0
-    });
-    data.push(x);
-  }
-  }
-  if(!data) return next(createCustomError("Order Not Found",404));
-  
-  const response = sendSuccessApiResponse(data);
-  res.json(response);
-})
-
 const filterorders = asyncWrapper(async (req,res,next)=>{
-  const filter = req.query;
-  const doc = await Payment.find(filter).populate('Item.product createdBy',
+  const filter = req.query.status;
+  const search = req.query.search;
+  const condition={};
+  if(filter)
+  {
+    condition.status = filter;
+  }
+  if(isObjectIdOrHexString(search))
+  {
+    condition._id = mongoose.Types.ObjectId(search)
+  }
+  if(!search || isObjectIdOrHexString(search)){
+  const doc = await Payment.find(condition).populate('Item.product createdBy',
   {
     password:0, wishlist:0, role:0, isVerified:0, orderhistory:0, isActive:0,cart:0
   }
@@ -167,6 +143,39 @@ const filterorders = asyncWrapper(async (req,res,next)=>{
   if(!doc) return next(createCustomError("User Not Found",404));
   const response = sendSuccessApiResponse(doc,200);
   res.json(response);
+}
+else
+{
+  let data=[]
+  const temp = await User.find(
+         { $or: [ 
+    {Name:{$regex:search,$options:"xi"}},
+    {email:{$regex:search,$options:"xi"}},
+    {phoneNumber:{$regex:search,$options:"xi"}}
+  ]}
+  )
+  if(temp)
+  {
+    const cond = {};
+    if(filter)
+    {
+      cond.status = filter;
+    }
+    for(var i=0;i<temp.length;i++){
+      cond.createdBy = temp[i]._id;
+      x = await Payment.find(cond).populate('Item.product createdBy',
+      {
+        password:0, wishlist:0, role:0, isVerified:0, orderhistory:0, isActive:0,cart:0
+      });
+      data.push(...x);
+    }
+  }
+  
+
+if(!data) return next(createCustomError("Order Not Found",404));
+
+const response = sendSuccessApiResponse(data);
+res.json(response);}
 })
 
 
@@ -199,6 +208,5 @@ module.exports = {
     deleteproduct,
     orderlist,
     filterorders,
-    changestatus,
-    searchOrder
+    changestatus
 };

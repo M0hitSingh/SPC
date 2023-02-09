@@ -135,6 +135,7 @@ const loginUser = async (req, res, next) => {
             Name: emailExists.Name,
             email: emailExists.email,
             token: generateJWT(emailExists),
+            role:emailExists.role
         };
         res.status(200).json(sendSuccessApiResponse(data));
     }
