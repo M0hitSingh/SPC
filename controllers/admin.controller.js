@@ -57,17 +57,20 @@ catch(err){
 
 const updateproduct = async (req, res, next) => {
   try{
-      const id = req.user.userId;
+    const id = req.user.userId;
+    console.log(id);
       const {
         name,
         category,
         quantity,
         description,
         price,
+        oldImgArray,
         productid
       } = req.body;
       const image = req.files;
-        
+      let oldImage = JSON.parse(oldImgArray);
+      console.log(oldImage);
       const toStore = {
         name,
         category,
@@ -85,9 +88,17 @@ const updateproduct = async (req, res, next) => {
         return next(createCustomError(message, 403));
       }
       else{
-   
           const product = await Product.updateOne({_id:productid},toStore);
           const Image = await Product.findById(productid);
+          if(oldImage){
+            Image.imageUrl = [];
+            await Image.save();
+            console.log(Image.imageUrl)
+            oldImage.forEach(image => {
+              Image.imageUrl.push(image);
+            })
+            await Image.save()
+          }
           if(image){
             image.forEach(image=>{
               Image.imageUrl.push(`/public/${image.filename}`);
