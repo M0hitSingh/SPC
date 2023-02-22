@@ -25,19 +25,23 @@ const createOrder = asyncWrapper(async (req, res, next) => {
         currency:req.body.currency,
         receipt:"rcp1"
     }
-    let paymentData;
-    await instance.orders.create(options,function (err,order){
-        if(err){
-            const message = "Cannot create Order";
-            return next(createCustomError(message, 400));
-        }
-        paymentData = {
-            currency:order.currency,
-            amount: order.amount,
-            razorpay: order,
-            createdBy: createdBy,
-        };
-    })
+    let paymentData = {
+        currency:req.body.currency,
+        amount: req.body.amount,
+        createdBy: createdBy,
+    };
+    // await instance.orders.create(options,function (err,order){
+    //     if(err){
+    //         const message = "Cannot create Order";
+    //         return next(createCustomError(message, 400));
+    //     }
+    //     paymentData = {
+    //         currency:order.currency,
+    //         amount: order.amount,
+    //         razorpay: order,
+    //         createdBy: createdBy,
+    //     };
+    // })
     const payment = await Transaction.create(paymentData);
 
     try{
@@ -68,22 +72,21 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
         const message = `Cannot find payment with id: ${id}`;
         return next(createCustomError(message, 400));
     }
-    let body = payment.razorpay.id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-    .createHmac("sha256", process.env.key_secret)
-    .update(body.toString())
-    .digest("hex");
-    const isVerified = expectedSignature===razorpay_signature? true:false;
+    // let body = payment.razorpay.id + "|" + razorpay_payment_id;
+    // const expectedSignature = crypto
+    // .createHmac("sha256", process.env.key_secret)
+    // .update(body.toString())
+    // .digest("hex");
+    // const isVerified = expectedSignature===razorpay_signature? true:false;
+    const isVerified = true;
     if (isVerified) {
-        const updateData = {
-            "razorpay.paymentId": razorpay_payment_id,
-            "razorpay.singature": razorpay_signature,
-        };
+        // const updateData = {
+        //     "razorpay.paymentId": razorpay_payment_id,
+        //     "razorpay.singature": razorpay_signature,
+        // };
         // console.log(payment);
         
         const pay={ 
-            paymentId:razorpay_payment_id,
-            razorpay:payment.razorpay,
             currency:payment.currency,
             amount :payment.amount,
             createdBy:payment.createdBy,
@@ -92,8 +95,8 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
             status: "Completed"
         }
         const obj = await Payment.create(pay);
-        await payment.remove();
-        const pId = await Payment.findOneAndUpdate({'razorpay.id': orid},updateData)
+        // await payment.remove();
+        // const pId = await Payment.findOneAndUpdate({'razorpay.id': orid},updateData)
         // console.log(pId);
         const user = await User.findById(req.user.userId).populate('cart.product');
         await Promise.all(user.cart.map(async (x) => {
@@ -105,10 +108,10 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
             );
          }));
         user.cart=[];
-        user.orderhistory.push(pId);
+        user.orderhistory.push(obj._id);
         // console.log(user);
         await user.save();
-        const paymessage = await Payment.findById(pId,"status Item amount").populate("Item.product")
+        const paymessage = await Payment.findById(obj._id,"status Item amount").populate("Item.product")
         const message = [];
         for(let i = 0 ; i < paymessage.Item.length ; i++){
             message.push({
