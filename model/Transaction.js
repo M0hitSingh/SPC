@@ -49,9 +49,11 @@ const transactionschema = new mongoose.Schema(
             required: [true, "Please provide CreatedBy"],
             ref: "User",
         },
-        createdAt: { type: Date, expires: "24h", default: Date.now },
+        createdAt:{
+            type:Date,
+            default:Date.now()
+        }
     },
-    { timestamps: true },
     
 );
 

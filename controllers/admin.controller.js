@@ -152,7 +152,8 @@ const filterorders = asyncWrapper(async (req,res,next)=>{
   }
   )
   if(!doc) return next(createCustomError("User Not Found",404));
-  const response = sendSuccessApiResponse(doc,200);
+  const cnt = await User.find({isActive:true}).count();
+  Object.assign(response,sendSuccessApiResponse(doc,200),{'count':cnt});
   res.json(response);
 }
 else
@@ -212,6 +213,21 @@ const changestatus = asyncWrapper(async(req,res,next)=>{
       }
 })
 
+const countUser = asyncWrapper(async(req,res,next)=>{
+  const id = req.user.userId;
+  const user = await User.findById(id);
+    if (!user) {
+        const message = "Not registered";
+        return next(createCustomError(message, 403));
+    }
+    else if(user.role != "Admin"){
+        const message = "Not an admin";
+        return next(createCustomError(message, 403));
+    }
+    else{
+    
+    }
+})
 
 module.exports = {
     addproduct,
@@ -219,5 +235,6 @@ module.exports = {
     deleteproduct,
     orderlist,
     filterorders,
-    changestatus
+    changestatus,
+    countUser
 };

@@ -67,7 +67,7 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
     const { id, razorpay_payment_id, razorpay_signature } = req.body;
     const Id = mongoose.Types.ObjectId(id);
     const payment = await Transaction.findById(Id);
-    const orid = payment.razorpay.id;
+    // const orid = payment.razorpay.id;
     if (!payment) {
         const message = `Cannot find payment with id: ${id}`;
         return next(createCustomError(message, 400));
@@ -86,7 +86,8 @@ const verifyPayment = asyncWrapper(async (req, res, next) => {
         // };
         // console.log(payment);
         
-        const pay={ 
+        const pay={
+            paymentId:id,
             currency:payment.currency,
             amount :payment.amount,
             createdBy:payment.createdBy,
